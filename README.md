@@ -1,7 +1,15 @@
-Concurrent Socket Server 
-Due Apr 11 by 11:59pm Points 150 Submitting a file upload File Types zip Available Jan 6 at 8am - May 2 at 11:59pm
+--------------------------
+-Concurrent Socket Server-
+--------------------------
+Due Apr 11 by 11:59pm 
+Points 150 
+Submitting a file upload File Type zip 
+Available Jan 6 at 8am - May 2 at 11:59pm
+-------------------------------------------------------
+
 Project Description
 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 This project requires students to implement a concurrent (multi-threaded) server for use in a client-server configuration to examine, analyze, and study the effects a concurrent server has on the efficiency (average turn-around time) of processing client requests.
 
 Instructions

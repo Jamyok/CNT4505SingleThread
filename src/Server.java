@@ -20,37 +20,65 @@ public class Server {
 public static void main(String[] args) {
     try {
         // Read port from portConfig.txt
-        int portAdress;
+        int portAddress;
         try (Scanner fileScanner = new Scanner(new File("portConfig.txt"))) {
-            portAdress = fileScanner.nextInt();
-        }//end try scanner
+            portAddress = fileScanner.nextInt();
+        }
 
-        try (// Create Server Socket
-        ServerSocket ss = new ServerSocket(portAdress)) {
-            System.out.println("Server started on port " + portAdress + ", waiting for client...");
+        // Create Server Socket
+        try (ServerSocket ss = new ServerSocket(portAddress)) {
+            System.out.println("Server started on port " + portAddress + ". Waiting for clients...");
 
-            Socket s = ss.accept();
+            while (true) {
+                Socket clientSocket = ss.accept();
+                System.out.println("Client connected: " + clientSocket.getInetAddress());
 
-            //receive msg FROM client
-            InputStreamReader in = new InputStreamReader(s.getInputStream());
-            BufferedReader bf = new BufferedReader(in);
+                // Handle client in a separate thread
+                new Thread(new ClientHandler(clientSocket)).start();
 
-            String str = bf.readLine();
-            System.out.println("Client"+ str);
+            }//end while
 
-            //Messege sent TO client
-            PrintWriter pr = new PrintWriter(s.getOutputStream());
-            pr.println("Hello Client!");
-            pr.flush();
-
-
-        }//end try serversocket
-        System.out.println("Client connected!");
-    }//end try
-
-    catch (Exception e) {
-        System.out.println("Exception in Server: " + e.getMessage());
-    }//end catch
-
-}//end main
+        }//end try
+    } catch (FileNotFoundException e) {
+        System.out.println("Error: portConfig.txt not found. Please create the file and specify a port.");
+    } catch (IOException e) {
+        System.out.println("Server error: " + e.getMessage());
+    }
+  }//end main
 }//end server class
+
+// Handles individual client connections
+class ClientHandler implements Runnable {
+private final Socket clientSocket;
+
+public ClientHandler(Socket socket) {
+    this.clientSocket = socket;
+}
+
+@Override
+public void run() {
+    try (
+        BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)
+    ) {
+        String clientMessage;
+        while ((clientMessage = in.readLine()) != null) {
+            System.out.println("Client: " + clientMessage);
+            out.println("Server received: " + clientMessage);
+        }
+    } 
+    catch (IOException e) {
+        System.out.println("Error handling client: " + e.getMessage());
+    } 
+    finally {
+        try {
+            clientSocket.close();
+        } 
+        catch (IOException e) {
+            System.out.println("Error closing client socket: " + e.getMessage());
+        }
+    }
+
+  }//end run
+
+}//end handler class

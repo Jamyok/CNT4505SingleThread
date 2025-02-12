@@ -3,7 +3,7 @@ import java.net.*;
 import java.io.*;
 
 public class Client {
-    // This project was created by Olivia Olyer, Macy Hayes, and Jamy De Vries
+    // This project was created by Amanda Olyer, Macy Hayes, and Jamy De Vries
 
     // Client-TO-DO:
     // Includes:
@@ -26,7 +26,7 @@ public class Client {
         System.out.println("***********************************************");
         System.out.println("* Iterative Socket Server                     *");
         System.out.println("* This project was created by;                *");
-        System.out.println("* Olivia Olyer, Macy Hayes, and Jamy De Vries *");
+        System.out.println("* Amanda Olyer, Macy Hayes, and Jamy De Vries *");
         System.out.println("***********************************************");
 
         

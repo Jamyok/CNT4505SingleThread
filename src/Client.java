@@ -6,6 +6,8 @@ import java.time.chrono.ChronoZonedDateTime;
 import java.time.temporal.Temporal;
 import java.io.*;
 import time.*;
+import java.lang.management.*;
+
 
 public class Client {
     // This project was created by Amanda Olyer, Macy Hayes, and Jamy De Vries
@@ -217,6 +219,9 @@ public class Client {
 
                 else if (input.equals("up")) {
                     //UP TIME ON SERVER\\
+                    RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+                    long uptime = runtimeMXBean.getUptime();
+                    System.out.println("JVM uptime: " + uptime + " milliseconds");
                 }
 
                 else if (input.equals("mem")) {

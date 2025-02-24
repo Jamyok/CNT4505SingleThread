@@ -1,6 +1,11 @@
 import java.util.Scanner;
 import java.net.*;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.time.chrono.ChronoZonedDateTime;
+import java.time.temporal.Temporal;
 import java.io.*;
+import time.*;
 
 public class Client {
     // This project was created by Amanda Olyer, Macy Hayes, and Jamy De Vries
@@ -70,6 +75,12 @@ public class Client {
                 System.out.println("|or      -Open reader               |");
                 System.out.println("|t       -Set number of times       |");
                 System.out.println("|thread  -Start thread              |");
+                System.out.println("|time    -return server time & date |");
+                System.out.println("|up      -return server uptime      |");
+                System.out.println("|mem     -return Memory use and     |");
+                System.out.println("|net     -return network connections|");
+                System.out.println("|cusers  -return current users      |");
+                System.out.println("|rproces -return running processes  |");
                 System.out.println("|q       -Quit                      |");
                 System.out.println("-------------------------------------");
 
@@ -197,7 +208,32 @@ public class Client {
                     }//end else
                 }//end thread
 
-                
+
+                else if (input.equals("time")) {
+                    ZonedDateTime now = ZonedDateTime.now();
+
+                    System.out.printf("Current Date and Time (YYYY-MM-DD)T(HR:MIN:SEC)[TIME/ZONE] \n"+now);
+                }
+
+                else if (input.equals("up")) {
+                    //UP TIME ON SERVER\\
+                }
+
+                else if (input.equals("mem")) {
+                    //CURRENT MEMORY IN USE ON SERVER\\
+                }
+
+                else if (input.equals("net")) {
+                    //CURRENT NETWORKING CONNECTION ON SERVER\\
+                }
+
+                else if (input.equals("cusers")) {
+                    //CURRENT USERS CONNECTIONS ON SERVER\\
+                }
+
+                else if (input.equals("rproces")) {
+                    //CURRENT RUNNING PROCECESS ON SERVER\\
+                }
 
                 //quitting
                 else if (input.equals("q")) {

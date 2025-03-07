@@ -1,9 +1,17 @@
 import java.io.*;
 import java.net.*;
 import java.time.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Server {
+    //store the start time of the server so it can be used for uptime calculation
+    public static final Instant serverStartTime = Instant.now();
+
+    //create list to store active clients to be returned to client itself
+    public static final List<Socket> activeClients = new ArrayList<>();
+
 //     Server-TO-DO
 //     Includes
 
@@ -32,6 +40,11 @@ public static void main(String[] args) {
 
             while (true) {
                 Socket clientSocket = ss.accept();
+
+                // prevents issues with multiple threads modifying the list of active connections
+                synchronized (activeClients) {
+                    activeClients.add(clientSocket);
+                }
                 System.out.println("Client connected: " + clientSocket.getInetAddress());
 
                 // Handle client in a separate thread
@@ -66,9 +79,43 @@ public void run() {
         while ((clientMessage = in.readLine()) != null) {
             System.out.println("Client: " + clientMessage);
             out.println("Server received: " + clientMessage);
-            if(clientMessage.equals("time")){
+            if(clientMessage.equalsIgnoreCase("time")){
                 ZonedDateTime now = ZonedDateTime.now();
-                System.out.printf("Current Date and Time on Server (YYYY-MM-DD)T(HR:MIN:SEC)[TIME/ZONE] \n"+now);
+
+                //attached the server time to its own variable so it can be sent to the client
+                String serverTime = "Current Date and Time on Server: " + now;
+                System.out.println(serverTime);
+                out.println(serverTime);
+
+                //System.out.printf("Current Date and Time on Server (YYYY-MM-DD)T(HR:MIN:SEC)[TIME/ZONE] \n"+now);
+            }
+            else if (clientMessage.equalsIgnoreCase("up")){
+                Duration uptime = Duration.between(Server.serverStartTime, Instant.now());
+                String uptimeMsg = String.format("Server uptime: %d hours, %d minutes, %d seconds", uptime.toHours(), uptime.toMinutesPart(), uptime.toSecondsPart());
+                System.out.println(uptimeMsg);
+                out.println(uptimeMsg);
+            }
+            else if (clientMessage.equalsIgnoreCase("mem")){
+                Runtime runtime = Runtime.getRuntime();
+                long totalMemory = runtime.totalMemory();
+                long freeMemory = runtime.freeMemory();
+                long usedMemory = totalMemory - freeMemory;
+                String memMsg = String.format("Server memory: %d MB used", usedMemory / (1024 * 1024)); //convert bytes to MB
+                System.out.println(memMsg);
+                out.println(memMsg);
+            }
+            else if (clientMessage.equalsIgnoreCase("net")){
+                out.println(getActiveConnections());
+            }
+
+            //this can probably be implemented better, just calling same method as before
+            else if (clientMessage.equalsIgnoreCase("cusers")){
+                out.println("Active users: " + getActiveConnections());
+            }
+
+            //2 possiblities found: ProcessHandle API? or system commands?
+            else if (clientMessage.equalsIgnoreCase("rprocess")){
+
             }
         }
     } 
@@ -77,6 +124,9 @@ public void run() {
     } 
     finally {
         try {
+            synchronized (Server.activeClients) {
+                Server.activeClients.remove(clientSocket);
+            }
             clientSocket.close();
         } 
         catch (IOException e) {
@@ -85,5 +135,17 @@ public void run() {
     }
 
   }//end run
+
+  //method to get the current active network connections
+  public static String getActiveConnections() {
+    synchronized (Server.activeClients) {
+        String result = "Active connections: " + Server.activeClients.size() + "\n";
+        for(Socket client : Server.activeClients){
+            result += client.getInetAddress() + ":" + client.getPort() + "\n";
+        }
+        return result;
+    } 
+}
+ 
 
 }//end handler class

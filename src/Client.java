@@ -77,7 +77,7 @@ public class Client {
                 System.out.println("|thread  -Start thread              |");
                 System.out.println("|time    -return server time & date |");
                 System.out.println("|up      -return server uptime      |");
-                System.out.println("|mem     -return Memory use and     |");
+                System.out.println("|mem     -return Memory use         |");
                 System.out.println("|net     -return network connections|");
                 System.out.println("|cusers  -return current users      |");
                 System.out.println("|rproces -return running processes  |");

@@ -105,17 +105,20 @@ public void run() {
                 out.println(memMsg);
             }
             else if (clientMessage.equalsIgnoreCase("net")){
+                System.out.println("Active users: " + getActiveConnections());
                 out.println(getActiveConnections());
             }
 
             //this can probably be implemented better, just calling same method as before
             else if (clientMessage.equalsIgnoreCase("cusers")){
+                System.out.println("Active users: " + getActiveConnections());
                 out.println("Active users: " + getActiveConnections());
             }
 
-            //2 possiblities found: ProcessHandle API? or system commands?
+            // windows system commands chosen since other way requires Java9+
             else if (clientMessage.equalsIgnoreCase("rprocess")){
-
+                System.out.println(getRunningProcesses());
+                out.println(getRunningProcesses());
             }
         }
     } 
@@ -139,13 +142,31 @@ public void run() {
   //method to get the current active network connections
   public static String getActiveConnections() {
     synchronized (Server.activeClients) {
-        String result = "Active connections: " + Server.activeClients.size() + "\n";
+        String ConnectionsResult = "Active connections: " + Server.activeClients.size() + "\n";
         for(Socket client : Server.activeClients){
-            result += client.getInetAddress() + ":" + client.getPort() + "\n";
+            ConnectionsResult += client.getInetAddress() + ":" + client.getPort() + "\n";
         }
-        return result;
+        return ConnectionsResult;
     } 
-}
- 
+}//end getActiveConnections
+
+// method to get the current programs running on server
+public static String getRunningProcesses() {
+    String processesResult = "";
+    try {
+        Process process = new ProcessBuilder("cmd", "/c", "tasklist").start();
+        BufferedReader processReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        String line;
+        
+        while((line = processReader.readLine()) != null) {
+            processesResult += line + "\n";
+        }
+
+    } catch (IOException e) {
+        return "Error retrieving processes: " + e.getMessage();
+    }
+    return processesResult;
+
+}// end getRunningProcesses
 
 }//end handler class

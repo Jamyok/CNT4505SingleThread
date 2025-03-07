@@ -1,11 +1,6 @@
-import java.util.Scanner;
-import java.net.*;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.time.chrono.ChronoZonedDateTime;
-import java.time.temporal.Temporal;
 import java.io.*;
-import time.*;
+import java.net.*;
+import java.util.Scanner;
 
 public class Client {
     // This project was created by Amanda Olyer, Macy Hayes, and Jamy De Vries
@@ -39,9 +34,11 @@ public class Client {
         String ipAddress = "";
         int portAddress = -1;
         Socket s = null;
-
+        String response;
+    
         class ClientWorker implements Runnable {
             private final Socket socket;
+            public static PrintWriter out;
         
             public ClientWorker(Socket socket) {
                 this.socket = socket;
@@ -50,7 +47,7 @@ public class Client {
             @Override
             public void run() {
                 try {
-                    PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                    out = new PrintWriter(socket.getOutputStream(), true);
                     out.println("Hello from thread: " + Thread.currentThread().getId());
                 } 
                 catch (IOException e) {
@@ -210,9 +207,19 @@ public class Client {
 
 
                 else if (input.equals("time")) {
-                    ZonedDateTime now = ZonedDateTime.now();
+                    //ZonedDateTime now = ZonedDateTime.now();
 
-                    System.out.printf("Current Date and Time (YYYY-MM-DD)T(HR:MIN:SEC)[TIME/ZONE] \n"+now);
+                    //System.out.printf("Current Date and Time (YYYY-MM-DD)T(HR:MIN:SEC)[TIME/ZONE] \n"+now);
+
+                    // client can send request for time
+                    //TODO: not working, says ClientWorker.out is null
+                    ClientWorker.out.println(input);
+
+                    while((response = scanner.nextLine()) != null) {
+                        System.out.println(response);
+                        if(!scanner.hasNextLine())
+                        break;
+                    }
                 }
 
                 else if (input.equals("up")) {

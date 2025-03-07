@@ -1,5 +1,6 @@
-import java.net.*;
 import java.io.*;
+import java.net.*;
+import java.time.*;
 import java.util.Scanner;
 
 public class Server {
@@ -65,6 +66,10 @@ public void run() {
         while ((clientMessage = in.readLine()) != null) {
             System.out.println("Client: " + clientMessage);
             out.println("Server received: " + clientMessage);
+            if(clientMessage == "time"){
+                ZonedDateTime now = ZonedDateTime.now();
+                System.out.printf("Current Date and Time on Server (YYYY-MM-DD)T(HR:MIN:SEC)[TIME/ZONE] \n"+now);
+            }
         }
     } 
     catch (IOException e) {

@@ -174,6 +174,7 @@ private static PrintWriter outTo;
                     }
 
                 }
+                
 
                   // Message to server
                 else if (input.equals("sm")) {

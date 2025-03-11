@@ -1,13 +1,10 @@
-import java.util.Scanner;
-import java.net.*;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.time.chrono.ChronoZonedDateTime;
-import java.time.temporal.Temporal;
 import java.io.*;
-import time.*;
+import java.net.*;
+import java.util.Scanner;
 
 public class Client {
+
+    
     // This project was created by Amanda Olyer, Macy Hayes, and Jamy De Vries
 
     // Client-TO-DO:
@@ -27,6 +24,9 @@ public class Client {
     // Calculate avg time
     // }
 
+private static Scanner scanner;
+private static PrintWriter outTo;
+
     public static void main(String[] args) {
         System.out.println("***********************************************");
         System.out.println("* Iterative Socket Server                     *");
@@ -35,30 +35,34 @@ public class Client {
         System.out.println("***********************************************");
 
         
-        Scanner scanner = new Scanner(System.in);
+        scanner = new Scanner(System.in);
         String ipAddress = "";
         int portAddress = -1;
         Socket s = null;
-
+        String response;
+        long totalTurnAroundTime = 0;
+    
         class ClientWorker implements Runnable {
             private final Socket socket;
+            public static PrintWriter out;
         
             public ClientWorker(Socket socket) {
                 this.socket = socket;
             }
         
+            
             @Override
             public void run() {
                 try {
-                    PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                    out = new PrintWriter(socket.getOutputStream(), true);
                     out.println("Hello from thread: " + Thread.currentThread().getId());
                 } 
                 catch (IOException e) {
                     System.out.println("Error in thread: " + e.getMessage());
                 }
-            }//end run
+            }//end run 
         }//end ClientWorker
-
+            
 
 
 
@@ -77,7 +81,7 @@ public class Client {
                 System.out.println("|thread  -Start thread              |");
                 System.out.println("|time    -return server time & date |");
                 System.out.println("|up      -return server uptime      |");
-                System.out.println("|mem     -return Memory use and     |");
+                System.out.println("|mem     -return Memory use         |");
                 System.out.println("|net     -return network connections|");
                 System.out.println("|cusers  -return current users      |");
                 System.out.println("|rproces -return running processes  |");
@@ -86,6 +90,8 @@ public class Client {
 
                 System.out.print("Enter your command: ");
                 String input = scanner.nextLine().trim().toLowerCase();
+
+                outTo = new PrintWriter(s.getOutputStream(), true);
 
                 if (input.equals("ip")) {
                     System.out.print("Input desired IP address: ");
@@ -151,7 +157,24 @@ public class Client {
                     } else {
                         System.out.println("Running the command " + times + " times.");
                     }
+
+                    for(int i = 0; i < times; i++){
+                        long startTime = System.nanoTime();
+
+                        outTo.println(input);
+                        response = scanner.nextLine();
+
+                        long endTime = System.nanoTime();
+
+                        long turnAroundTime = (endTime - startTime) /1000000;
+                        totalTurnAroundTime += turnAroundTime;
+
+                        System.out.println("Request " + (i + 1) + ": Server response: " + response);
+                        System.out.println("Turn-around time: " + turnAroundTime + " ms");
+                    }
+
                 }
+                
 
                   // Message to server
                 else if (input.equals("sm")) {
@@ -210,29 +233,69 @@ public class Client {
 
 
                 else if (input.equals("time")) {
-                    ZonedDateTime now = ZonedDateTime.now();
+                    //ZonedDateTime now = ZonedDateTime.now();
 
-                    System.out.printf("Current Date and Time (YYYY-MM-DD)T(HR:MIN:SEC)[TIME/ZONE] \n"+now);
+                    //System.out.printf("Current Date and Time (YYYY-MM-DD)T(HR:MIN:SEC)[TIME/ZONE] \n"+now);
+
+                    // client can send request for time
+                    //TODO: not working, says Client.out is null
+                    outTo.println(input);
+
+                    while(scanner.hasNextLine()) {
+                        response = scanner.nextLine();
+                        System.out.println(response);
+                    }
+
                 }
 
                 else if (input.equals("up")) {
-                    //UP TIME ON SERVER\\
+                    //TODO: not sure if working, no errors
+                    outTo.println(input);
+
+                    while(scanner.hasNextLine()) {
+                        response = scanner.nextLine();
+                        System.out.println(response);
+                    }
                 }
 
                 else if (input.equals("mem")) {
-                    //CURRENT MEMORY IN USE ON SERVER\\
+                    //TODO: not sure if working, no errors
+                    outTo.println(input);
+
+                    while(scanner.hasNextLine()) {
+                        response = scanner.nextLine();
+                        System.out.println(response);
+                    }
                 }
 
                 else if (input.equals("net")) {
-                    //CURRENT NETWORKING CONNECTION ON SERVER\\
+                    //TODO: not sure if working, no errors
+                    outTo.println(input);
+
+                    while(scanner.hasNextLine()) {
+                        response = scanner.nextLine();
+                        System.out.println(response);
+                    }
                 }
 
                 else if (input.equals("cusers")) {
-                    //CURRENT USERS CONNECTIONS ON SERVER\\
+                    //TODO: not sure if working, no errors
+                    outTo.println(input);
+
+                    while(scanner.hasNextLine()) {
+                        response = scanner.nextLine();
+                        System.out.println(response);
+                    }
                 }
 
                 else if (input.equals("rproces")) {
-                    //CURRENT RUNNING PROCECESS ON SERVER\\
+                    //TODO: not sure if working, no errors
+                    outTo.println(input);
+
+                    while(scanner.hasNextLine()) {
+                        response = scanner.nextLine();
+                        System.out.println(response);
+                    }
                 }
 
                 //quitting

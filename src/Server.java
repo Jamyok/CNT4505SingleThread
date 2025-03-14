@@ -35,13 +35,13 @@ public static void main(String[] args) {
         }
 
         // Create Server Socket
-        try (ServerSocket ss = new ServerSocket(portAddress)) {
+        try (ServerSocket serverSocket = new ServerSocket(portAddress)) {
             System.out.println("Server started on port " + portAddress + ". Waiting for clients...");
 
             while (true) {
-                Socket clientSocket = ss.accept();
+                Socket clientSocket = serverSocket.accept();
 
-                // prevents issues with multiple threads modifying the list of active connections
+                // Prevent concurrent modification issues with synchronized list access
                 synchronized (activeClients) {
                     activeClients.add(clientSocket);
                 }
@@ -49,17 +49,15 @@ public static void main(String[] args) {
 
                 // Handle client in a separate thread
                 new Thread(new ClientHandler(clientSocket)).start();
-
-            }//end while
-
-        }//end try
+            }
+        }
     } catch (FileNotFoundException e) {
         System.out.println("Error: portConfig.txt not found. Please create the file and specify a port.");
     } catch (IOException e) {
         System.out.println("Server error: " + e.getMessage());
     }
-  }//end main
-}//end server class
+}
+}
 
 // Handles individual client connections
 class ClientHandler implements Runnable {
@@ -78,97 +76,86 @@ public void run() {
         String clientMessage;
         while ((clientMessage = in.readLine()) != null) {
             System.out.println("Client: " + clientMessage);
-            out.println("Server received: " + clientMessage);
-            if(clientMessage.equalsIgnoreCase("time")){
-                ZonedDateTime now = ZonedDateTime.now();
 
-                //attached the server time to its own variable so it can be sent to the client
-                String serverTime = "Current Date and Time on Server: " + now;
-                System.out.println(serverTime);
-                out.println(serverTime);
-
-                //System.out.printf("Current Date and Time on Server (YYYY-MM-DD)T(HR:MIN:SEC)[TIME/ZONE] \n"+now);
-            }
-            else if (clientMessage.equalsIgnoreCase("up")){
-                Duration uptime = Duration.between(Server.serverStartTime, Instant.now());
-                String uptimeMsg = String.format("Server uptime: %d hours, %d minutes, %d seconds", uptime.toHours(), uptime.toMinutesPart(), uptime.toSecondsPart());
-                System.out.println(uptimeMsg);
-                out.println(uptimeMsg);
-            }
-            else if (clientMessage.equalsIgnoreCase("mem")){
-                Runtime runtime = Runtime.getRuntime();
-                long totalMemory = runtime.totalMemory();
-                long freeMemory = runtime.freeMemory();
-                long usedMemory = totalMemory - freeMemory;
-                String memMsg = String.format("Server memory: %d MB used", usedMemory / (1024 * 1024)); //convert bytes to MB
-                System.out.println(memMsg);
-                out.println(memMsg);
-            }
-            else if (clientMessage.equalsIgnoreCase("net")){
-                System.out.println("Active users: " + getActiveConnections());
-                out.println(getActiveConnections());
-            }
-
-            //this can probably be implemented better, just calling same method as before
-            else if (clientMessage.equalsIgnoreCase("cusers")){
-                System.out.println("Active users: " + getActiveConnections());
-                out.println("Active users: " + getActiveConnections());
-            }
-
-            // windows system commands chosen since other way requires Java9+
-            else if (clientMessage.equalsIgnoreCase("rprocess")){
-                System.out.println(getRunningProcesses());
-                out.println(getRunningProcesses());
-            }
+            // Process the client's command
+            String response = handleClientCommand(clientMessage);
+            out.println(response); // Send response back to client
         }
-    } 
-    catch (IOException e) {
+    } catch (IOException e) {
         System.out.println("Error handling client: " + e.getMessage());
-    } 
-    finally {
+    } finally {
         try {
             synchronized (Server.activeClients) {
                 Server.activeClients.remove(clientSocket);
             }
             clientSocket.close();
-        } 
-        catch (IOException e) {
+        } catch (IOException e) {
             System.out.println("Error closing client socket: " + e.getMessage());
         }
     }
+}
 
-  }//end run
-  
+// Processes client commands and returns appropriate responses
+private String handleClientCommand(String command) {
+    switch (command.toLowerCase()) {
+        case "time":
+            return "Current Date and Time on Server: " + ZonedDateTime.now();
 
+        case "up":
+            Duration uptime = Duration.between(Server.serverStartTime, Instant.now());
+            return String.format("Server uptime: %d hours, %d minutes, %d seconds",
+                    uptime.toHours(), uptime.toMinutesPart(), uptime.toSecondsPart());
 
-  //method to get the current active network connections
-  public static String getActiveConnections() {
+        case "mem":
+            Runtime runtime = Runtime.getRuntime();
+            long totalMemory = runtime.totalMemory();
+            long freeMemory = runtime.freeMemory();
+            long usedMemory = totalMemory - freeMemory;
+            return String.format("Server memory: %d MB used", usedMemory / (1024 * 1024));
+
+        case "net":
+        case "cusers":
+            return getActiveConnections();
+
+        case "rprocess":
+            return getRunningProcesses();
+
+        default:
+            return "Invalid command. Available commands: time, up, mem, net, cusers, rprocess.";
+    }
+}
+
+// Retrieves active network connections
+public static String getActiveConnections() {
     synchronized (Server.activeClients) {
-        String ConnectionsResult = "Active connections: " + Server.activeClients.size() + "\n";
-        for(Socket client : Server.activeClients){
-            ConnectionsResult += client.getInetAddress() + ":" + client.getPort() + "\n";
+        StringBuilder result = new StringBuilder("Active connections: " + Server.activeClients.size() + "\n");
+        for (Socket client : Server.activeClients) {
+            result.append(client.getInetAddress()).append(":").append(client.getPort()).append("\n");
         }
-        return ConnectionsResult;
-    } 
-}//end getActiveConnections
+        return result.toString();
+    }
+}
 
-// method to get the current programs running on server
+// Retrieves running processes (supports both Windows and Linux/Mac)
 public static String getRunningProcesses() {
-    String processesResult = "";
+    StringBuilder processesResult = new StringBuilder();
+    String os = System.getProperty("os.name").toLowerCase();
+    Process process;
     try {
-        Process process = new ProcessBuilder("cmd", "/c", "tasklist").start();
+        if (os.contains("win")) {
+            process = new ProcessBuilder("cmd", "/c", "tasklist").start();
+        } else {
+            process = new ProcessBuilder("bash", "-c", "ps -aux").start();
+        }
+
         BufferedReader processReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         String line;
-        
-        while((line = processReader.readLine()) != null) {
-            processesResult += line + "\n";
+        while ((line = processReader.readLine()) != null) {
+            processesResult.append(line).append("\n");
         }
-
     } catch (IOException e) {
         return "Error retrieving processes: " + e.getMessage();
     }
-    return processesResult;
-
-}// end getRunningProcesses
-
-}//end handler class
+    return processesResult.toString();
+}
+}

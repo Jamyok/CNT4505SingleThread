@@ -146,7 +146,7 @@ public static String getNetStat(int port) {
         String line;
 
         while((line = netReader.readLine()) != null) {
-            netResult.append(line).append("\n");
+            netResult.append(line).append("\t");
         }
 
         process.waitFor();

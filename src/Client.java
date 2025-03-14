@@ -29,6 +29,10 @@ public class Client {
     private static BufferedReader inFromServer;
     private static Socket s = null;
 
+    private static double totalTat = 0; // Stores total turn-around time
+    private static int completedRequests = 0; // Counts completed threads
+    private static int numThreads; // Total number of threads
+
     public static void main(String[] args) {
         System.out.println("***********************************************");
         System.out.println("* Iterative Socket Server                     *");
@@ -107,12 +111,12 @@ public class Client {
 
                 else if (input.equals("thread")) {
                     if (s != null && !s.isClosed()) {
-                        System.out.print("Enter number of threads (1-10): ");
-                        int numThreads = scanner.nextInt();
+                        System.out.print("Enter number of threads (1-25): ");
+                        numThreads = scanner.nextInt();
                         scanner.nextLine(); 
 
-                        if (numThreads < 1 || numThreads > 10) {
-                            System.out.println("Number must be between 1 and 10.");
+                        if (numThreads < 1 || numThreads > 25) {
+                            System.out.println("Number must be between 1 and 25.");
                         } else {
                             Thread[] threads = new Thread[numThreads];
                             for (int i = 0; i < numThreads; i++) {
@@ -123,6 +127,7 @@ public class Client {
                                 t.join();
                             }
                             System.out.println("All threads completed.");
+                            System.out.println("Average Turn-around Time: " + (totalTat / numThreads) + "ms");
                         }
                     } else {
                         System.out.println("No active connection. Use 'view' first.");
@@ -196,6 +201,14 @@ public class Client {
         }
     }
 
+    private synchronized static void updateResults(double tat){
+        totalTat += tat;
+        completedRequests++;
+
+        //System.out.println("Average Turn-around Time: " + (totalTat / numThreads));
+
+    } 
+
     // Threaded worker for multiple requests
     static class ClientWorker implements Runnable {
         private final Socket socket;
@@ -210,10 +223,21 @@ public class Client {
         public void run() {
             try {
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                //BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+                double startTime = System.currentTimeMillis();
 
                 out.println("Hello from thread: " + threadId);
-                System.out.println("Thread " + threadId + " received: " + in.readLine());
+
+                double endTime = System.currentTimeMillis();
+
+                double tat = endTime - startTime;
+
+                //String response = in.readLine();
+
+                System.out.println("Thread " + threadId + " received: | Turn-around Time: " + tat + "ms");
+
+                updateResults(tat);
 
             } catch (IOException e) {
                 System.out.println("Thread " + threadId + " error: " + e.getMessage());

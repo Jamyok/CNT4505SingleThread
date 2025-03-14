@@ -160,9 +160,9 @@ public static String getNetStat(int port) {
 // Retrieves active network connections
 public static String getActiveConnections() {
     synchronized (Server.activeClients) {
-        StringBuilder result = new StringBuilder("Active connections: " + Server.activeClients.size() + "\n");
+        StringBuilder result = new StringBuilder("Active connections: " + Server.activeClients.size() + "\t");
         for (Socket client : Server.activeClients) {
-            result.append(client.getInetAddress()).append(":").append(client.getPort()).append("\n");
+            result.append(client.getInetAddress()).append(":").append(client.getPort()).append("\t");
         }
         return result.toString();
     }
@@ -183,7 +183,7 @@ public static String getRunningProcesses() {
         BufferedReader processReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         String line;
         while ((line = processReader.readLine()) != null) {
-            processesResult.append(line).append("\n");
+            processesResult.append(line).append("\t");
         }
     } catch (IOException e) {
         return "Error retrieving processes: " + e.getMessage();

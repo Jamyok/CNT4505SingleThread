@@ -113,23 +113,73 @@ public class Client {
                 else if (input.equals("thread")) {
                     if (s != null && !s.isClosed()) {
                         System.out.print("Enter number of threads (1-25): ");
-                        numThreads = scanner.nextInt();
+                        int numThreads = scanner.nextInt();
                         scanner.nextLine(); 
 
                         if (numThreads < 1 || numThreads > 25) {
                             System.out.println("Number must be between 1 and 25.");
-                        } else {
+                            return;
+                        } 
+
+                        while(true) {
+                            System.out.println("\nType a a command to find the average turn around time depending on the number of threads.");
+                            System.out.println("Enter 'exit' to go back to main menu.\n");
+                            String command = scanner.nextLine().trim().toLowerCase();
+
+                            if(command.equals("exit")){
+                                System.out.println("Returning to main menu...");
+                                break;
+                            }
+
                             Thread[] threads = new Thread[numThreads];
+                            double[] threadsTats = new double[numThreads];
+
                             for (int i = 0; i < numThreads; i++) {
-                                threads[i] = new Thread(new ClientWorker(s, i + 1));
+                                final int threadIndex = i;
+                                threads[i] = new Thread(() -> {
+                                    try {
+                                        PrintWriter outThread = new PrintWriter(s.getOutputStream(), true);
+                                        BufferedReader inThread = new BufferedReader(new InputStreamReader(s.getInputStream()));
+
+                                        double startTime = System.currentTimeMillis();
+                                        outThread.println(command);
+
+                                        String response;
+
+                                        while((response = inThread.readLine()) != null) {
+                                            System.out.println("Thread # " + (threadIndex + 1) + " received: " + response);
+
+                                            double endTime = System.currentTimeMillis();
+                                            double tat = endTime - startTime;
+                                            threadsTats[threadIndex] = tat;
+    
+                                            System.out.println("Thread # " + (threadIndex + 1) + " | TAT: " + tat + "ms");
+
+                                            
+                                        }
+                                        // code doesnt get executed- if placed inside above loop then gets ran too many times      
+                                        double totalTat = 0;
+                                            for(double tatT : threadsTats){
+                                                totalTat += tatT;
+                                            }
+                                            double avgTat = totalTat / numThreads;
+                
+                                            System.out.println("All threads completed.");
+                                            System.out.println("Average Turn-around Time: " + avgTat + "ms");
+
+                                    } catch (Exception e) {
+                                        System.out.println("Error in threads: " + e.getMessage());
+                                    }
+                                });
                                 threads[i].start();
                             }
                             for (Thread t : threads) {
                                 t.join();
                             }
-                            System.out.println("All threads completed.");
-                            //System.out.println("Average Turn-around Time: " + (totalTat / numThreads) + "ms");
+
+
                         }
+                  
                     } else {
                         System.out.println("No active connection. Use 'view' first.");
                     }
@@ -224,14 +274,15 @@ public class Client {
         public void run() {
             try {
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                out.println("Hello from thread: " + threadId);
 
-                double totalTat = 0;
+
+                /* 
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
                 double startTime = System.currentTimeMillis();
 
-                out.println("Hello from thread: " + threadId);
-
+                
                 String response;
 
                 double endTime = System.currentTimeMillis();
@@ -249,8 +300,9 @@ public class Client {
 
                 updateResults(tat);
 
-                //double avgTat = totalTat / Client.numThreads;
-                //System.out.println("Thread " + threadId + " | Average Turn-around Time: " + avgTat + "ms");
+                double avgTat = totalTat / Client.numThreads;
+                System.out.println("Thread " + threadId + " | Average Turn-around Time: " + avgTat + "ms");
+                */
 
             } catch (IOException e) {
                 System.out.println("Thread " + threadId + " error: " + e.getMessage());

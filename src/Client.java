@@ -86,23 +86,35 @@ public class Client {
 
                 else if (input.equals("sm")) {
                     if (s != null && !s.isClosed()) {
-                        System.out.print("Enter message: ");
-                        String message = scanner.nextLine();
-                        outTo.println(message);
-                        System.out.println("Sent: " + message);
-                        System.out.println("Server response: " + inFromServer.readLine());
+                        new Thread(() -> {
+                            try {
+                                System.out.print("Enter message: ");
+                                String message = scanner.nextLine();
+                                outTo.println(message);
+                                System.out.println("Sent: " + message);
+                                System.out.println("Server response: " + inFromServer.readLine());
+                            } catch (IOException e) {
+                                System.out.println("Error sending message: " + e.getMessage());
+                            }
+                        }).start();
                     } else {
                         System.out.println("No active connection. Use 'view' first.");
                     }
                 }
 
                 else if (input.equals("or")) {
-                    if (s != null && !s.isClosed()) {
-                        String serverResponse = inFromServer.readLine();
-                        System.out.println("Server: " + serverResponse);
-                    } else {
-                        System.out.println("No active connection. Use 'view' first.");
-                    }
+                    new Thread(() -> {
+                        try {
+                            if (s != null && !s.isClosed()) {
+                                String serverResponse = inFromServer.readLine();
+                                System.out.println("Server: " + serverResponse);
+                            } else {
+                                System.out.println("No active connection. Use 'view' first.");
+                            }
+                        } catch (IOException e) {
+                            System.out.println("Error reading from server: " + e.getMessage());
+                        }
+                    }).start();
                 }
 
                 else if (input.equals("thread")) {
@@ -110,19 +122,14 @@ public class Client {
                         System.out.print("Enter number of threads (1-10): ");
                         int numThreads = scanner.nextInt();
                         scanner.nextLine(); 
-
+                
                         if (numThreads < 1 || numThreads > 10) {
                             System.out.println("Number must be between 1 and 10.");
                         } else {
-                            Thread[] threads = new Thread[numThreads];
                             for (int i = 0; i < numThreads; i++) {
-                                threads[i] = new Thread(new ClientWorker(s, i + 1));
-                                threads[i].start();
+                                new Thread(new ClientWorker(s, i + 1)).start();
                             }
-                            for (Thread t : threads) {
-                                t.join();
-                            }
-                            System.out.println("All threads completed.");
+                            System.out.println(numThreads + " threads started.");
                         }
                     } else {
                         System.out.println("No active connection. Use 'view' first.");
@@ -181,19 +188,24 @@ public class Client {
 
     // Send a command and receive the response
     private static void sendCommandToServer(String command) {
-        try {
-            if (s != null && !s.isClosed()) {
-                outTo.println(command);
-                String response;
-                while ((response = inFromServer.readLine()) != null) {
-                    System.out.println(response);
+        new Thread(() -> {
+            try {
+                if (s != null && !s.isClosed()) {
+                    PrintWriter out = new PrintWriter(s.getOutputStream(), true);
+                    BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+    
+                    out.println(command);
+                    String response;
+                    while ((response = in.readLine()) != null) {
+                        System.out.println(response);
+                    }
+                } else {
+                    System.out.println("No active connection. Use 'view' first.");
                 }
-            } else {
-                System.out.println("No active connection. Use 'view' first.");
+            } catch (IOException e) {
+                System.out.println("Error sending command: " + e.getMessage());
             }
-        } catch (IOException e) {
-            System.out.println("Error sending command: " + e.getMessage());
-        }
+        }).start();
     }
 
     // Threaded worker for multiple requests

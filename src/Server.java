@@ -114,6 +114,7 @@ private String handleClientCommand(String command) {
             return String.format("Server memory: %d MB used", usedMemory / (1024 * 1024));
 
         case "net":
+            return getNetStat();
         case "cusers":
             return getActiveConnections();
 
@@ -123,6 +124,13 @@ private String handleClientCommand(String command) {
         default:
             return "Invalid command. Available commands: time, up, mem, net, cusers, rprocess.";
     }
+}
+
+// 
+public static String getNetStat() {
+    StringBuilder result = new StringBuilder();
+    // Add logic to populate the result variable
+    return result.toString();
 }
 
 // Retrieves active network connections

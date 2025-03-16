@@ -297,11 +297,6 @@ public class Client {
 
                 System.out.println("Thread " + threadId + " | Turn-around Time: " + tat + "ms");
 
-                //updateResults(tat);
-
-                //double avgTat = totalTat / Client.numThreads;
-                //System.out.println("Thread " + threadId + " | Average Turn-around Time: " + avgTat + "ms");
-
             } catch (IOException e) {
                 System.out.println("Thread " + threadId + " error: " + e.getMessage());
             }

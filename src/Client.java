@@ -1,5 +1,9 @@
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Scanner;
 
 public class Client {
@@ -30,7 +34,7 @@ public class Client {
     private static Socket s = null;
 
     private static double totalTat = 0; // Stores total turn-around time
-    private static int completedRequests = 0; // Counts completed threads
+    //private static int completedRequests = 0; // Counts completed threads
     private static int numThreads;
 
     public static void main(String[] args) {
@@ -109,30 +113,9 @@ public class Client {
                     }
                 }
 
-                // TODO: add average TAT calculation for all 6 client requests
                 else if (input.equals("thread")) {
-                    if (s != null && !s.isClosed()) {
-                        System.out.print("Enter number of threads (1-25): ");
-                        numThreads = scanner.nextInt();
-                        scanner.nextLine(); 
+                    handleThreadOperation(scanner, ipAddress, portAddress);
 
-                        if (numThreads < 1 || numThreads > 25) {
-                            System.out.println("Number must be between 1 and 25.");
-                        } else {
-                            Thread[] threads = new Thread[numThreads];
-                            for (int i = 0; i < numThreads; i++) {
-                                threads[i] = new Thread(new ClientWorker(s, i + 1));
-                                threads[i].start();
-                            }
-                            for (Thread t : threads) {
-                                t.join();
-                            }
-                            System.out.println("All threads completed.");
-                            //System.out.println("Average Turn-around Time: " + (totalTat / numThreads) + "ms");
-                        }
-                    } else {
-                        System.out.println("No active connection. Use 'view' first.");
-                    }
                 }
 
                 else if (isValidCommand(input)) {
@@ -158,6 +141,81 @@ public class Client {
 
         scanner.close();
     }
+
+    private static void handleThreadOperation(Scanner scanner, String ipAddress, int portAddress) {
+        System.out.print("Enter number of threads (1-25): ");
+        numThreads = scanner.nextInt();
+        scanner.nextLine();
+        if(numThreads == -1) return;
+
+        while (true) { 
+            System.out.println("\nAvailable commands: time, up, mem, net, cusers, rprocess, exit");
+            System.out.print("Enter command: ");
+            String operation = scanner.nextLine().trim().toLowerCase();
+
+            if (operation.equals("exit")) {
+                System.out.println("Returning to main menu.");
+                return;
+            }
+
+            String[] validCommands = {"time", "up", "mem", "net", "cusers", "rprocess"};
+            if (!Arrays.asList(validCommands).contains(operation)) {
+                System.out.println("Invalid command. Try again.");
+                continue;
+            }
+
+            executeThreads(numThreads, operation, ipAddress, portAddress);
+        }
+    
+    }
+
+    private static void executeThreads(int numThreads, String operation, String ipAddress, int portAddress) {
+        List<Thread> threads = new ArrayList<>();
+        List<Double> turnaroundTimes = Collections.synchronizedList(new ArrayList<>());
+
+        for (int i = 1; i <= numThreads; i++) {
+            int threadId = i;
+            Thread thread = new Thread(() -> {
+                long startTime = System.nanoTime();
+                String response = sendRequest(operation, ipAddress, portAddress);
+                long endTime = System.nanoTime();
+                double turnaroundTime = (endTime - startTime) / 1_000_000.0; // Convert to ms
+                
+                turnaroundTimes.add(turnaroundTime);
+                System.out.printf("Thread %d received: %s%n", threadId, response);
+                System.out.printf("Thread %d | TAT: %.2fms%n", threadId, turnaroundTime);
+            });
+            threads.add(thread);
+            thread.start();
+        }
+
+        for (Thread thread : threads) {
+            try {
+                thread.join(); // Wait for all threads to complete
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Calculate and display the average turnaround time
+        double avgTAT = turnaroundTimes.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+        System.out.printf("%nAverage Turn-around Time for all threads: %.2fms%n", avgTAT);
+    }
+
+    
+    private static String sendRequest(String request, String ipAddress, int portAddress) {
+        try (Socket socket = new Socket(ipAddress, portAddress);
+             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+
+            out.println(request);
+            return in.readLine(); // Get server response
+        } catch (IOException e) {
+            return "Error: Unable to contact server";
+        } 
+    } 
+    
+  
 
     // Display the available commands
     private static void displayMenu() {
@@ -202,14 +260,6 @@ public class Client {
         }
     }
 
-    private synchronized static void updateResults(double tat){
-        totalTat += tat;
-        completedRequests++;
-
-        System.out.println("Average Turn-around Time: " + (totalTat / numThreads));
-
-    } 
-
     // Threaded worker for multiple requests
     static class ClientWorker implements Runnable {
         private final Socket socket;
@@ -247,7 +297,7 @@ public class Client {
 
                 System.out.println("Thread " + threadId + " | Turn-around Time: " + tat + "ms");
 
-                updateResults(tat);
+                //updateResults(tat);
 
                 //double avgTat = totalTat / Client.numThreads;
                 //System.out.println("Thread " + threadId + " | Average Turn-around Time: " + avgTat + "ms");

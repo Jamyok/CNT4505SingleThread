@@ -179,7 +179,7 @@ public class Client {
                 long startTime = System.nanoTime();
                 String response = sendRequest(operation, ipAddress, portAddress);
                 long endTime = System.nanoTime();
-                double turnaroundTime = (endTime - startTime) / 1_000_000.0; // Convert to ms
+                double turnaroundTime = (endTime - startTime) / 1000000.0; // Convert to ms
                 
                 turnaroundTimes.add(turnaroundTime);
                 System.out.printf("Thread %d received: %s%n", threadId, response);
@@ -197,7 +197,7 @@ public class Client {
             }
         }
 
-        // Calculate and display the average turnaround time
+        // Calculate and display the average turn-around time
         double avgTAT = turnaroundTimes.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
         System.out.printf("%nAverage Turn-around Time for all threads: %.2fms%n", avgTAT);
     }

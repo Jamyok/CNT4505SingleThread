@@ -113,8 +113,9 @@ private String handleClientCommand(String command) {
             long usedMemory = totalMemory - freeMemory;
             return String.format("Server memory: %d MB used", usedMemory / (1024 * 1024));
 
-        case "net":
+        case "net": 
             return getNetStat();
+
         case "cusers":
             return getActiveConnections();
 
@@ -126,14 +127,32 @@ private String handleClientCommand(String command) {
     }
 }
 
-// 
 public static String getNetStat() {
-    StringBuilder result = new StringBuilder();
-    // Add logic to populate the result variable
-    return result.toString();
-}
+        List<String> connections = new ArrayList<>();
+        try {
+            ProcessBuilder processBuilder;
+            if (System.getProperty("os.name").toLowerCase().contains("win")) {
+                processBuilder = new ProcessBuilder("cmd.exe", "/c", "netstat -ano");
+            } else {
+                processBuilder = new ProcessBuilder("sh", "-c", "netstat -tulnp");
+            }
 
-// Retrieves active network connections
+            Process process = processBuilder.start();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                connections.add(line);
+            }
+
+            process.waitFor();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return connections.toString();
+    }
+
+// Retrieves user connections
 public static String getActiveConnections() {
     synchronized (Server.activeClients) {
         StringBuilder result = new StringBuilder("Active connections: " + Server.activeClients.size() + "\n");
@@ -141,6 +160,7 @@ public static String getActiveConnections() {
             result.append(client.getInetAddress()).append(":").append(client.getPort()).append("\n");
         }
         return result.toString();
+
     }
 }
 

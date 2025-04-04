@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+
 public class Server {
     //store the start time of the server so it can be used for uptime calculation
     public static final Instant serverStartTime = Instant.now();
@@ -41,13 +42,13 @@ public static void main(String[] args) {
             while (true) {
                 Socket clientSocket = serverSocket.accept();
 
-                // Prevent concurrent modification issues with synchronized list access
+                // Prevent concurrent modification issues with synchronized list access- helps with cleanup
                 synchronized (activeClients) {
                     activeClients.add(clientSocket);
                 }
                 System.out.println("Client connected: " + clientSocket.getInetAddress());
 
-                // Handle client in a separate thread
+                // Handle client in a separate thread = each new connection gets its own thread = multi-threaded
                 new Thread(new ClientHandler(clientSocket)).start();
             }
         }

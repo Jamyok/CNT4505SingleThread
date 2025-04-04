@@ -35,7 +35,7 @@ public class Client {
 
     private static double totalTat = 0; // Stores total turn-around time
     //private static int completedRequests = 0; // Counts completed threads
-    private static int numThreads;
+    public static int numThreads;
 
     public static void main(String[] args) {
         System.out.println("***********************************************");
@@ -143,7 +143,7 @@ public class Client {
     }
 
     private static void handleThreadOperation(Scanner scanner, String ipAddress, int portAddress) {
-        System.out.print("Enter number of threads (1-25): ");
+        System.out.print("Enter number of threads (1-100): ");
         numThreads = scanner.nextInt();
         scanner.nextLine();
         if(numThreads == -1) return;

@@ -76,14 +76,30 @@ public void run() {
     ) {
         String clientMessage;
         while ((clientMessage = in.readLine()) != null) {
-            System.out.println("Client: " + clientMessage);
+            int threadId = -1;
+            String operation = clientMessage;
+            String[] parts = clientMessage.split(":",2);
+            if(parts.length == 2) {
+                try {
+                    threadId = Integer.parseInt(parts[0]);
+                    operation = parts[1];
+                } catch (NumberFormatException e) {
+                    System.out.println("Incorrect format of client message: " + clientMessage);
+                }
+            }
+
+            System.out.println("Client request: " + clientMessage); // want to return the output here
 
             // Process the client's command
             String response = handleClientCommand(clientMessage);
             out.println(response); // Send response back to client
+            //System.out.println("Request output: " + response);
         }
     } catch (IOException e) {
-        System.out.println("Error handling client: " + e.getMessage());
+        //System.out.println("Error handling client: " + e.getMessage());
+        if (!e.getMessage().contains("An established connection was aborted by the software in your host machine")) {
+            System.out.println("Error handling client: " + e.getMessage());
+        }
     } finally {
         try {
             synchronized (Server.activeClients) {

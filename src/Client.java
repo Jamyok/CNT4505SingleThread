@@ -177,7 +177,7 @@ public class Client {
             int threadId = i;
             Thread thread = new Thread(() -> {
                 long startTime = System.nanoTime();
-                String response = sendRequest(operation, ipAddress, portAddress);
+                String response = sendRequest(operation, ipAddress, portAddress, threadId);
                 long endTime = System.nanoTime();
                 double turnaroundTime = (endTime - startTime) / 1000000.0; // Convert to ms
                 
@@ -203,13 +203,15 @@ public class Client {
     }
 
     
-    private static String sendRequest(String request, String ipAddress, int portAddress) {
+    private static String sendRequest(String request, String ipAddress, int portAddress, int threadId) {
         try (Socket socket = new Socket(ipAddress, portAddress);
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
             out.println(request);
-            return in.readLine(); // Get server response
+            String serverResponse = in.readLine();
+            out.println(threadId + ":" + serverResponse);
+            return serverResponse; // Get server response
         } catch (IOException e) {
             return "Error: Unable to contact server";
         } 

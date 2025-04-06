@@ -88,7 +88,7 @@ public void run() {
                 }
             }
 
-            System.out.println("Client request: " + clientMessage); // want to return the output here
+            System.out.println("Client request: " + clientMessage);
 
             // Process the client's command
             String response = handleClientCommand(clientMessage);

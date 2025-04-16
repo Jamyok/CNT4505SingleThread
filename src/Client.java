@@ -107,12 +107,12 @@ public class Client {
 
                 else if (input.equals("thread")) {
                     if (s != null && !s.isClosed()) {
-                        System.out.print("Enter number of threads (1-10): ");
+                        System.out.print("Enter number of threads (1-100): ");
                         int numThreads = scanner.nextInt();
                         scanner.nextLine(); 
 
-                        if (numThreads < 1 || numThreads > 10) {
-                            System.out.println("Number must be between 1 and 10.");
+                        if (numThreads < 1 || numThreads > 100) {
+                            System.out.println("Number must be between 1 and 100.");
                         } else {
                             Thread[] threads = new Thread[numThreads];
                             for (int i = 0; i < numThreads; i++) {

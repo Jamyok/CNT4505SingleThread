@@ -103,8 +103,10 @@ private String handleClientCommand(String command) {
 
         case "up":
             Duration uptime = Duration.between(Server.serverStartTime, Instant.now());
-            return String.format("Server uptime: %d hours, %d minutes, %d seconds",
-                    uptime.toHours(), uptime.toMinutesPart(), uptime.toSecondsPart());
+            long hours = uptime.toHours();
+            long minutes = uptime.toMinutes() - (hours * 60);
+            long seconds = uptime.getSeconds() - (uptime.toMinutes() * 60);
+            return String.format("Server uptime: %d hours, %d minutes, %d seconds", hours, minutes, seconds);
 
         case "mem":
             Runtime runtime = Runtime.getRuntime();
@@ -121,6 +123,9 @@ private String handleClientCommand(String command) {
 
         case "rprocess":
             return getRunningProcesses();
+
+        case "thread":
+            return "Thread count: " + Thread.activeCount();
 
         default:
             return "Invalid command. Available commands: time, up, mem, net, cusers, rprocess.";

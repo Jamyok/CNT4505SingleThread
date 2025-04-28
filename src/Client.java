@@ -184,8 +184,8 @@ public class Client {
         try {
             if (s != null && !s.isClosed()) {
                 outTo.println(command);
-                String response;
-                while ((response = inFromServer.readLine()) != null) {
+                String response = inFromServer.readLine();
+                if (response != null) {
                     System.out.println(response);
                 }
             } else {
